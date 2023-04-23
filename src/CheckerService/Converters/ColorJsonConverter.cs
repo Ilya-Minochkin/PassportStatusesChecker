@@ -10,13 +10,13 @@ namespace CheckerService.Converters
         {
             var colorName = reader.GetString();
             if (colorName == null)
-                throw new JsonException("Unknown color");
+                throw new JsonException("Empty color");
             return Color.FromName(colorName);
         }
 
         public override void Write(Utf8JsonWriter writer, Color value, JsonSerializerOptions options)
         {
-            throw new NotImplementedException();
+            writer.WriteStringValue(value.Name);
         }
     }
 }
