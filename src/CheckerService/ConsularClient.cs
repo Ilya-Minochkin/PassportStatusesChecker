@@ -3,7 +3,7 @@ using System.Net.Http.Json;
 
 namespace CheckerService
 {
-    public class ConsularClient
+    internal class ConsularClient
     {
         private readonly string url = Constants.URL_MIDPASS;
         private readonly string applicationNumber;

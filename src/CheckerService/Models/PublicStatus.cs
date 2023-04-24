@@ -11,5 +11,24 @@ namespace CheckerService.Models
         [JsonConverter(typeof(ColorJsonConverter))]
         public Color Color { get; set; }
         public bool Subscription { get; set; }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is PublicStatus status &&
+                   Id == status.Id &&
+                   Description == status.Description &&
+                   Color.Equals(status.Color) &&
+                   Subscription == status.Subscription;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Id, Description, Color, Subscription);
+        }
+
+        public override string? ToString()
+        {
+            return $"Id={Id}, Description={Description}, Color={Color.Name}, Subscription={Subscription}";
+        }
     }
 }

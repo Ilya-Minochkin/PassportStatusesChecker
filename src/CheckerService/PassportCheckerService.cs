@@ -1,4 +1,5 @@
-﻿using CheckerService.Models;
+﻿using CheckerService.Merge;
+using CheckerService.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,15 +16,15 @@ namespace CheckerService
     {
         Task<ReadinessResponce> GetStatus();
         Task SaveToFile(string filePath, ReadinessResponce responce);
-        Task MergeWithFile(string filePath, ReadinessResponce responce);
+        Task<List<Difference>> MergeWithFile(string filePath, ReadinessResponce responce);
     }
     public class PassportCheckerService : IPassportCheckerService
     {
         private readonly ConsularClient client;
 
-        public PassportCheckerService(ConsularClient client)
+        public PassportCheckerService(string applicationNumber)
         {
-            this.client = client;
+            client = new ConsularClient(applicationNumber);
         }
 
         public async Task<ReadinessResponce> GetStatus()
@@ -35,9 +36,15 @@ namespace CheckerService
             return responce;
         }
 
-        public async Task MergeWithFile(string filePath, ReadinessResponce responce)
+        public async Task<List<Difference>> MergeWithFile(string filePath, ReadinessResponce responce)
         {
-            throw new NotImplementedException();
+            var text = await File.ReadAllTextAsync(filePath);
+            var responceFromFile = JsonSerializer.Deserialize<ReadinessResponce>(text);
+
+            if (responceFromFile == null)
+                throw new Exception("Can't deserialize responce from file");
+
+            return ResponceMerger.Merge(responceFromFile, responce);
         }
 
         public async Task SaveToFile(string filePath, ReadinessResponce responce)
