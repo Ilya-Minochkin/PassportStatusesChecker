@@ -19,7 +19,9 @@
 
         public override string? ToString()
         {
-            return $"Name={Name} Percent={Percent}";
+            return $"Внутренний статус:\n" +
+                $"Name={Name}\n" +
+                $"Percent={Percent}";
         }
     }
 }

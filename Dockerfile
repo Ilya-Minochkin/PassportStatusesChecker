@@ -9,8 +9,6 @@ RUN dotnet publish src/PassportStatusesChecker.sln -c Release -o out
 
 FROM mcr.microsoft.com/dotnet/nightly/runtime:6.0
 
-#WORKDIR /src/PassportStatusesChecker
-
 COPY --from=build-env /src/out .
 
 ENTRYPOINT ["dotnet", "PassportStatusesChecker.dll"]

@@ -28,7 +28,11 @@ namespace CheckerService.Models
 
         public override string? ToString()
         {
-            return $"Id={Id}, Description={Description}, Color={Color.Name}, Subscription={Subscription}";
+            return $"Публичный статус:\n" +
+                $"Id={Id}\n" +
+                $"Description={Description}\n" +
+                $"Color={Color.Name}\n" +
+                $"Subscription={Subscription}";
         }
     }
 }

@@ -38,11 +38,14 @@ namespace CheckerService
 
         public async Task<List<Difference>> MergeWithFile(string filePath, ReadinessResponce responce)
         {
-            var text = await File.ReadAllTextAsync(filePath);
-            var responceFromFile = JsonSerializer.Deserialize<ReadinessResponce>(text);
-
-            if (responceFromFile == null)
-                throw new Exception("Can't deserialize responce from file");
+            var responceFromFile = new ReadinessResponce();
+            if (File.Exists(filePath))
+            {
+                var text = await File.ReadAllTextAsync(filePath);
+                responceFromFile = JsonSerializer.Deserialize<ReadinessResponce>(text);
+                if (responceFromFile == null)
+                    throw new Exception("Can't deserialize responce from file");
+            }
 
             return ResponceMerger.Merge(responceFromFile, responce);
         }

@@ -9,7 +9,7 @@ namespace CheckerService.Merge
 {
     internal static class ResponceMerger
     {
-        public static List<Difference> Merge<T>(T left, T right)
+        public static List<Difference> Merge<T>(T? left, T right)
         {
             var result = new List<Difference>();    
             var properties = typeof(T).GetProperties();
@@ -17,8 +17,8 @@ namespace CheckerService.Merge
             {
                 var leftValue = property.GetValue(left);
                 var rightValue = property.GetValue(right);
-                if (!leftValue.Equals(rightValue))
-                    result.Add(new Difference(leftValue.ToString(), rightValue.ToString()));
+                if (!leftValue?.Equals(rightValue) ?? true)
+                    result.Add(new Difference(leftValue?.ToString(), rightValue.ToString()));
             }
             return result;
         }
@@ -26,10 +26,10 @@ namespace CheckerService.Merge
 
     public class Difference
     {
-        public string LeftValue { get; set; }   
+        public string? LeftValue { get; set; }   
         public string RightValue { get; set; }
 
-        public Difference(string leftValue, string rightValue)
+        public Difference(string? leftValue, string rightValue)
         {
             LeftValue = leftValue;
             RightValue = rightValue;
