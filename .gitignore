@@ -398,4 +398,4 @@ FodyWeavers.xsd
 *.sln.iml
 
 # launchSetting
-*.src/PassportStatusesChecker/Properties/launchSettings.json
+src/PassportStatusesChecker/Properties/launchSettings.json
