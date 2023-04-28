@@ -1,4 +1,6 @@
-﻿using CheckerService.Merge;
+﻿using CheckerService.Logger;
+using CheckerService.Logger.Abstractions;
+using CheckerService.Merge;
 using CheckerService.Models;
 using System;
 using System.Collections.Generic;
@@ -21,19 +23,30 @@ namespace CheckerService
     public class PassportCheckerService : IPassportCheckerService
     {
         private readonly ConsularClient client;
+        private readonly ILogger log; 
 
         public PassportCheckerService(string applicationNumber)
         {
             client = new ConsularClient(applicationNumber);
+            log = new ConsoleLogger();
         }
 
         public async Task<ReadinessResponce> GetStatus()
         {
-            var responce = await client.CheckUpdates();
-            if (responce == null)
-                throw new Exception("Responce exception");
+            try
+            {
+                var responce = await client.CheckUpdates();
+                if (responce == null)
+                    throw new Exception("Responce exception");
 
-            return responce;
+                log.Information($"Respoce getted - {responce}");
+                return responce;
+            }
+            catch (Exception ex)
+            {
+                log.Error("During request " +  ex.Message);
+                throw;
+            }
         }
 
         public async Task<List<Difference>> MergeWithFile(string filePath, ReadinessResponce responce)
@@ -58,6 +71,7 @@ namespace CheckerService
                 WriteIndented = true
             };
             var jsonString = JsonSerializer.Serialize(responce, options);
+            log.Information("New file saved");
             await File.WriteAllTextAsync(filePath, jsonString, Encoding.UTF8);    
         }
     }
