@@ -8,17 +8,21 @@ using TelegramBotApplication.Exceptions;
 
 namespace TelegramBotApplication
 {
-    public class PassportStatusesCheckerTelegramBot
+    public interface ITelegramBot
+    {
+        Task Run();
+    }
+    public class PassportStatusesCheckerTelegramBot : ITelegramBot
     {
         private readonly ITelegramBotClient bot;
         private readonly IPassportCheckerService service;
         private readonly string pathToLastStatusFile;
         private Timer? timer;
 
-        public PassportStatusesCheckerTelegramBot()
+        public PassportStatusesCheckerTelegramBot(ITelegramBotClient client, IPassportCheckerService passportCheckerService)
         {
-            bot = new TelegramBotClient(GetToken());
-            service = new PassportCheckerService(Constants.MY_APPLICATION_NUMBER);
+            bot = client;
+            service = passportCheckerService;
             pathToLastStatusFile = GetPathToFile();
         }
 
@@ -47,7 +51,7 @@ namespace TelegramBotApplication
                     await service.SaveToFile(pathToLastStatusFile, currentResponce);
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 //Console.WriteLine(ex.Message);
             }
@@ -62,7 +66,7 @@ namespace TelegramBotApplication
         {
             var sb = new StringBuilder();
 
-            foreach (var difference in differences) 
+            foreach (var difference in differences)
                 sb.AppendLine($"Было: {difference.LeftValue ?? "null"}\n Стало: {difference.RightValue}");
 
             return sb.ToString();
@@ -79,14 +83,6 @@ namespace TelegramBotApplication
         private async Task HandleError(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
         {
             Console.WriteLine(exception.Message);
-        }
-
-        private static string GetToken()
-        {
-            var token = Environment.GetEnvironmentVariable("TELEGRAM_TOKEN");
-            if (token == null)
-                throw new TelegramTokenNotFoundException();
-            return token;
         }
 
         private static string GetPathToFile()

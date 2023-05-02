@@ -2,15 +2,10 @@
 using CheckerService.Logger.Abstractions;
 using CheckerService.Merge;
 using CheckerService.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Text.Unicode;
-using System.Threading.Tasks;
 
 namespace CheckerService
 {
@@ -23,7 +18,7 @@ namespace CheckerService
     public class PassportCheckerService : IPassportCheckerService
     {
         private readonly ConsularClient client;
-        private readonly ILogger log; 
+        private readonly ILogger log;
 
         public PassportCheckerService(string applicationNumber)
         {
@@ -44,7 +39,7 @@ namespace CheckerService
             }
             catch (Exception ex)
             {
-                log.Error("During request " +  ex.Message);
+                log.Error("During request " + ex.Message);
                 throw;
             }
         }
@@ -65,14 +60,21 @@ namespace CheckerService
 
         public async Task SaveToFile(string filePath, ReadinessResponce responce)
         {
-            var options = new JsonSerializerOptions
+            try
             {
-                Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.Cyrillic),
-                WriteIndented = true
-            };
-            var jsonString = JsonSerializer.Serialize(responce, options);
-            log.Information("New file saved");
-            await File.WriteAllTextAsync(filePath, jsonString, Encoding.UTF8);    
+                var options = new JsonSerializerOptions
+                {
+                    Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.Cyrillic),
+                    WriteIndented = true
+                };
+                var jsonString = JsonSerializer.Serialize(responce, options);
+                log.Information("New file saved");
+                await File.WriteAllTextAsync(filePath, jsonString, Encoding.UTF8);
+            }
+            catch(Exception ex)
+            {
+                log.Error($"Error: {ex.Message}");  
+            }
         }
     }
 }

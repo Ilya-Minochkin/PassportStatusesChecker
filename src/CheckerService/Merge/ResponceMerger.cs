@@ -1,17 +1,10 @@
-﻿using CheckerService.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CheckerService.Merge
+﻿namespace CheckerService.Merge
 {
     internal static class ResponceMerger
     {
         public static List<Difference> Merge<T>(T? left, T right)
         {
-            var result = new List<Difference>();    
+            var result = new List<Difference>();
             var properties = typeof(T).GetProperties();
             foreach (var property in properties)
             {
@@ -26,7 +19,7 @@ namespace CheckerService.Merge
 
     public class Difference
     {
-        public string? LeftValue { get; set; }   
+        public string? LeftValue { get; set; }
         public string RightValue { get; set; }
 
         public Difference(string? leftValue, string rightValue)
