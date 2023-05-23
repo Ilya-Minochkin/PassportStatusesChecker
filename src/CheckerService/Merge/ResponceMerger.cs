@@ -1,4 +1,6 @@
-﻿namespace CheckerService.Merge
+﻿using CheckerService.Abstractions;
+
+namespace CheckerService.Merge
 {
     internal static class ResponceMerger
     {
@@ -10,10 +12,18 @@
             {
                 var leftValue = property.GetValue(left);
                 var rightValue = property.GetValue(right);
+
                 if (!leftValue?.Equals(rightValue) ?? true)
-                    result.Add(new Difference(leftValue?.ToString(), rightValue.ToString()));
+                    result.Add(new Difference(GetObjectString(leftValue), GetObjectString(rightValue)));
             }
             return result;
+        }
+
+        private static string? GetObjectString(object? obj)
+        {
+            if (obj is IUserMessage)
+                return ((IUserMessage) obj).ToMessage();
+            return obj?.ToString();
         }
     }
 
