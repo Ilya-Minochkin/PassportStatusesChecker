@@ -43,11 +43,10 @@ namespace TelegramBotApplication
             try
             {
                 var currentResponce = await service.GetStatus();
-                var differences = await service.MergeWithFile(pathToLastStatusFile, currentResponce);
-                if (differences.Count > 0)
-                {
-                    var diffMessage = BuildDifferenceMessage(differences);
-                    await SendActualStatusMessage(diffMessage);
+                var mergeResult = await service.MergeWithFile(pathToLastStatusFile, currentResponce);
+                if (!mergeResult.ResultEquals)
+                { 
+                    await SendActualStatusMessage(mergeResult.ToString());
                     await service.SaveToFile(pathToLastStatusFile, currentResponce);
                 }
             }
@@ -59,17 +58,7 @@ namespace TelegramBotApplication
 
         private async Task SendActualStatusMessage(string message)
         {
-            await bot.SendTextMessageAsync(new ChatId(Constants.MY_CHAT_ID), message);
-        }
-
-        private static string BuildDifferenceMessage(IEnumerable<Difference> differences)
-        {
-            var sb = new StringBuilder();
-
-            foreach (var difference in differences)
-                sb.AppendLine($"Было: {difference.LeftValue ?? "null"}\n Стало: {difference.RightValue}");
-
-            return sb.ToString();
+            await bot.SendTextMessageAsync(new ChatId(Constants.MY_CHAT_ID), message, Telegram.Bot.Types.Enums.ParseMode.Markdown);
         }
 
         private async Task HandleMessage(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)

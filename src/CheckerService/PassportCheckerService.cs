@@ -13,7 +13,7 @@ namespace CheckerService
     {
         Task<ReadinessResponce> GetStatus();
         Task SaveToFile(string filePath, ReadinessResponce responce);
-        Task<List<Difference>> MergeWithFile(string filePath, ReadinessResponce responce);
+        Task<MergeResult> MergeWithFile(string filePath, ReadinessResponce responce);
     }
     public class PassportCheckerService : IPassportCheckerService
     {
@@ -34,7 +34,7 @@ namespace CheckerService
                 if (responce == null)
                     throw new Exception("Responce exception");
 
-                log.Information($"Respoce getted - {responce}");
+                log.Information($"Responce getted - {responce}");
                 return responce;
             }
             catch (Exception ex)
@@ -44,7 +44,7 @@ namespace CheckerService
             }
         }
 
-        public async Task<List<Difference>> MergeWithFile(string filePath, ReadinessResponce responce)
+        public async Task<MergeResult> MergeWithFile(string filePath, ReadinessResponce responce)
         {
             var responceFromFile = new ReadinessResponce();
             if (File.Exists(filePath))

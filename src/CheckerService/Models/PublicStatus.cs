@@ -31,8 +31,7 @@ namespace CheckerService.Models
 
         public string ToMessage()
         {
-            return $"Публичный статус:\n" +
-                $"Название={Name}\n";
+            return $"Название={Name}";
         }
 
         public override string? ToString()

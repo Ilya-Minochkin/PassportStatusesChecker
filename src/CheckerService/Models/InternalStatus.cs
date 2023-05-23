@@ -21,8 +21,7 @@ namespace CheckerService.Models
 
         public string ToMessage()
         {
-            return $"Внутренний статус:\n" +
-                $"Имя={Name}\n" +
+            return $"Имя={Name}\n" +
                 $"Процент={Percent}";
         }
 

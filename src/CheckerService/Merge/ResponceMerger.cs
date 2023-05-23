@@ -1,41 +1,63 @@
 ﻿using CheckerService.Abstractions;
+using CheckerService.Models;
 
 namespace CheckerService.Merge
 {
     internal static class ResponceMerger
     {
-        public static List<Difference> Merge<T>(T? left, T right)
+        public static MergeResult Merge(ReadinessResponce left, ReadinessResponce right)
         {
-            var result = new List<Difference>();
-            var properties = typeof(T).GetProperties();
-            foreach (var property in properties)
-            {
-                var leftValue = property.GetValue(left);
-                var rightValue = property.GetValue(right);
+            if (left.Uid == null)
+                return new MergeResult()
+                {
+                    Name = "Новый статус",
+                    Body = right.ToMessage()
+                };
 
-                if (!leftValue?.Equals(rightValue) ?? true)
-                    result.Add(new Difference(GetObjectString(leftValue), GetObjectString(rightValue)));
-            }
-            return result;
+            var isPublicStatusEquals = left.PublicStatus.Equals(right.PublicStatus);
+            var isInternalStatusEquals = left.InternalStatus.Equals(right.InternalStatus);
+            var publicMergeMessage = GetMergeMessage(left.PublicStatus, right.PublicStatus);
+            var internalMergeMessage = GetMergeMessage(left.InternalStatus, right.InternalStatus);
+
+            if (isPublicStatusEquals && isInternalStatusEquals)
+                return new MergeResult()
+                {
+                    ResultEquals = true
+                };
+
+            if (!isPublicStatusEquals && !isInternalStatusEquals)
+                return new MergeResult()
+                {
+                    Name = "*Обновился публичный и внутренний статусы*",
+                    Body = "*Публичный статус*:\n" 
+                        + publicMergeMessage + "\n"
+                        + "*Внутренний статус*:\n"
+                        + internalMergeMessage
+                };
+
+            if (!isPublicStatusEquals)
+                return new MergeResult()
+                {
+                    Name = "*Обновился публичный статус*",
+                    Body = publicMergeMessage
+                };
+
+            if (!isInternalStatusEquals)
+                return new MergeResult()
+                {
+                    Name = "*Обновился внутренний статус*",
+                    Body = internalMergeMessage
+                };
+
+            throw new Exception("Responces merge failed");
         }
 
-        private static string? GetObjectString(object? obj)
+        private static string GetMergeMessage(IUserMessage left, IUserMessage right)
         {
-            if (obj is IUserMessage)
-                return ((IUserMessage) obj).ToMessage();
-            return obj?.ToString();
-        }
-    }
-
-    public class Difference
-    {
-        public string? LeftValue { get; set; }
-        public string RightValue { get; set; }
-
-        public Difference(string? leftValue, string rightValue)
-        {
-            LeftValue = leftValue;
-            RightValue = rightValue;
+            return "Было:\n"
+                    + $"{left.ToMessage()}\n"
+                    + "Стало:\n"
+                    + $"{right.ToMessage()}\n";
         }
     }
 }
