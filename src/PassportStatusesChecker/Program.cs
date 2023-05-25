@@ -1,4 +1,6 @@
 ﻿using CheckerService;
+using Database;
+using Database.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 using Telegram.Bot;
 using TelegramBotApplication;
@@ -12,7 +14,9 @@ namespace PassportStatusesChecker
             var services = ConfigureServices();
             var serviceProvider = services.BuildServiceProvider();
             var bot = serviceProvider.GetService<ITelegramBot>();
-            await bot.Run();
+            var chatRepo = serviceProvider.GetService<IChatsRepository>();
+            var chat = await chatRepo.GetChat(1);
+            //await bot.Run();
             while (true) ;
         }
 
@@ -23,6 +27,11 @@ namespace PassportStatusesChecker
             services.AddTransient<ITelegramBotClient, TelegramBotClient>(_ => new TelegramBotClient(telegramToken));
             services.AddTransient<IPassportCheckerService, PassportCheckerService>(_ => new PassportCheckerService(Constants.MY_APPLICATION_NUMBER));
             services.AddTransient<ITelegramBot, PassportStatusesCheckerTelegramBot>();
+            services.AddDbContext<PgDbContext>();
+            services.AddTransient<IChatsRepository, ChatsRepository>();
+            services.AddTransient<IReadinessResponsesRepository, ReadinessResponsesRepository>();
+            services.AddTransient<IPublicStatusesRepository, PublicStatusesRepository>();
+            services.AddTransient<IInternalStatusesRepository, InternalStatusesRepository>();
             return services;
         }
     }
