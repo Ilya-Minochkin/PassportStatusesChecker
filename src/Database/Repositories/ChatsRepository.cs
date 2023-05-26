@@ -11,6 +11,7 @@ namespace Database.Repositories
     public interface IChatsRepository
     {
         Task<Chat> GetChat(int id);
+        Task<List<Chat>> GetAll();
         Task Save(Chat chat);
     }
     public class ChatsRepository : IChatsRepository
@@ -25,6 +26,11 @@ namespace Database.Repositories
         public async Task<Chat> GetChat(int id)
         {
             return await context.Chats.FirstAsync(chat => chat.Id == id);
+        }
+
+        public async Task<List<Chat>> GetAll()
+        {
+            return await context.Chats.ToListAsync();
         }
 
         public async Task Save(Chat chat)

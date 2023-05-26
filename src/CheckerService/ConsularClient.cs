@@ -6,13 +6,10 @@ namespace CheckerService
     internal class ConsularClient
     {
         private readonly string url = Constants.URL_MIDPASS;
-        private readonly string applicationNumber;
         private readonly HttpClient client;
 
-        public ConsularClient(string applicationNumber)
+        public ConsularClient()
         {
-            this.applicationNumber = applicationNumber;
-            url += applicationNumber;
             client = new HttpClient
             {
                 BaseAddress = new Uri(url)
@@ -20,9 +17,9 @@ namespace CheckerService
             SetHeaders();
         }
 
-        public async Task<ReadinessResponce> CheckUpdates()
+        public async Task<ReadinessResponse> CheckUpdates(string applicationNumber)
         {
-            return await client.GetFromJsonAsync<ReadinessResponce>(url);
+            return await client.GetFromJsonAsync<ReadinessResponse>(url + applicationNumber);
         }
 
         private void SetHeaders()

@@ -11,6 +11,7 @@ namespace Database.Repositories
     public interface IReadinessResponsesRepository
     {
         Task<ReadinessResponse> GetReadinessResponse(int id);
+        Task<ReadinessResponse?> FindByUidAndChatId(string uid, long chatId);
         Task Save (ReadinessResponse response);
         Task Update (ReadinessResponse response);
     }
@@ -26,6 +27,11 @@ namespace Database.Repositories
         public async Task<ReadinessResponse> GetReadinessResponse(int id)
         {
             return await context.ReadinessResponses.FirstAsync(x => x.Id == id);
+        }
+
+        public async Task<ReadinessResponse?> FindByUidAndChatId(string uid, long chatId)
+        {
+            return await context.ReadinessResponses.FirstOrDefaultAsync(x => x.Chat.ChatId == chatId && x.Uid == uid);
         }
 
         public async Task Save(ReadinessResponse response)

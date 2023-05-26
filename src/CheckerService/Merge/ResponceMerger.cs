@@ -5,7 +5,7 @@ namespace CheckerService.Merge
 {
     internal static class ResponceMerger
     {
-        public static MergeResult Merge(ReadinessResponce left, ReadinessResponce right)
+        public static MergeResult Merge(ReadinessResponse left, ReadinessResponse right)
         {
             if (left.Uid == null)
                 return new MergeResult()

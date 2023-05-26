@@ -3,9 +3,10 @@ using System.Text.Json.Serialization;
 
 namespace CheckerService.Models
 {
-    public class ReadinessResponce : IUserMessage
+    public class ReadinessResponse : IUserMessage
     {
         public string Uid { get; set; }
+        public Chat Chat { get; set; }
         public DateTime ReceptionDate { get; set; }
         [JsonPropertyName("passportStatus")]
         public PublicStatus PublicStatus { get; set; }

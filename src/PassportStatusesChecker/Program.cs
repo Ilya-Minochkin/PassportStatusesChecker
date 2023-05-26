@@ -1,7 +1,14 @@
 ﻿using CheckerService;
+using CheckerService.Services;
 using Database;
 using Database.Repositories;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Configuration;
+using CheckerService.Logger;
+using CheckerService.Logger.Abstractions;
+using CheckerService.Models;
 using Telegram.Bot;
 using TelegramBotApplication;
 
@@ -14,9 +21,13 @@ namespace PassportStatusesChecker
             var services = ConfigureServices();
             var serviceProvider = services.BuildServiceProvider();
             var bot = serviceProvider.GetService<ITelegramBot>();
-            var chatRepo = serviceProvider.GetService<IChatsRepository>();
-            var chat = await chatRepo.GetChat(1);
-            //await bot.Run();
+            var chatService = serviceProvider.GetService<IChatService>();
+            var newChat = new Chat()
+            {
+                ChatId = 838343374
+            };
+            //await chatService.Add(newChat);
+            await bot.Run();
             while (true) ;
         }
 
@@ -24,10 +35,14 @@ namespace PassportStatusesChecker
         {
             var services = new ServiceCollection();
             var telegramToken = Constants.GetTelegramToken();
+            //services.AddDbContext<PgDbContext>();
+            services.AddDbContext<PgDbContext>(options =>
+                options.UseNpgsql(ConfigurationManager.AppSettings.Get("ConnectionString")));
             services.AddTransient<ITelegramBotClient, TelegramBotClient>(_ => new TelegramBotClient(telegramToken));
-            services.AddTransient<IPassportCheckerService, PassportCheckerService>(_ => new PassportCheckerService(Constants.MY_APPLICATION_NUMBER));
+            services.AddTransient<ILogger, ConsoleLogger>();
+            services.AddTransient<IChatService, ChatService>();
+            services.AddTransient<IPassportCheckerService, PassportCheckerService>();
             services.AddTransient<ITelegramBot, PassportStatusesCheckerTelegramBot>();
-            services.AddDbContext<PgDbContext>();
             services.AddTransient<IChatsRepository, ChatsRepository>();
             services.AddTransient<IReadinessResponsesRepository, ReadinessResponsesRepository>();
             services.AddTransient<IPublicStatusesRepository, PublicStatusesRepository>();

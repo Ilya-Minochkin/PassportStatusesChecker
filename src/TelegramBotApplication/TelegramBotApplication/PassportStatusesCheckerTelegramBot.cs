@@ -1,5 +1,6 @@
 ﻿using CheckerService;
 using CheckerService.Merge;
+using CheckerService.Services;
 using System.Reflection;
 using System.Text;
 using Telegram.Bot;
@@ -15,14 +16,19 @@ namespace TelegramBotApplication
     public class PassportStatusesCheckerTelegramBot : ITelegramBot
     {
         private readonly ITelegramBotClient bot;
-        private readonly IPassportCheckerService service;
+        private readonly IPassportCheckerService passportCheckerService;
+        private readonly IChatService chatService;
         private readonly string pathToLastStatusFile;
+        private Dictionary<long, ApplicationTimer> chatsInfo = new();
         private Timer? timer;
 
-        public PassportStatusesCheckerTelegramBot(ITelegramBotClient client, IPassportCheckerService passportCheckerService)
+        public PassportStatusesCheckerTelegramBot(ITelegramBotClient client
+            , IPassportCheckerService passportCheckerService
+            , IChatService chatService)
         {
             bot = client;
-            service = passportCheckerService;
+            this.passportCheckerService = passportCheckerService;
+            this.chatService = chatService;
             pathToLastStatusFile = GetPathToFile();
         }
 
@@ -33,21 +39,19 @@ namespace TelegramBotApplication
                 HandleError
                 );
 
-            timer = new Timer(async (_) =>
-                    await Task.Run(() => Check())
-                , null, TimeSpan.Zero, TimeSpan.FromDays(1));
+            await InitializeTimers();
         }
 
-        private async Task Check()
+        private async Task Check(long chatId, string applicationNumber)
         {
             try
             {
-                var currentResponce = await service.GetStatus();
-                var mergeResult = await service.MergeWithFile(pathToLastStatusFile, currentResponce);
+                var currentResponse = await passportCheckerService.GetStatus(applicationNumber);
+                var mergeResult = await passportCheckerService.MergeWithDatabase(currentResponse);
                 if (!mergeResult.ResultEquals)
                 { 
-                    await SendActualStatusMessage(mergeResult.ToString());
-                    await service.SaveToFile(pathToLastStatusFile, currentResponce);
+                    await SendActualStatusMessage(chatId, mergeResult.ToString());
+                    await passportCheckerService.SaveToDatabase(currentResponse);
                 }
             }
             catch (Exception ex)
@@ -56,9 +60,9 @@ namespace TelegramBotApplication
             }
         }
 
-        private async Task SendActualStatusMessage(string message)
+        private async Task SendActualStatusMessage(long chatId, string message)
         {
-            await bot.SendTextMessageAsync(new ChatId(Constants.MY_CHAT_ID), message, Telegram.Bot.Types.Enums.ParseMode.Markdown);
+            await bot.SendTextMessageAsync(new ChatId(chatId), message, Telegram.Bot.Types.Enums.ParseMode.Markdown);
         }
 
         private async Task HandleMessage(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
@@ -72,6 +76,7 @@ namespace TelegramBotApplication
         private async Task HandleError(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
         {
             Console.WriteLine(exception.Message);
+            
         }
 
         private static string GetPathToFile()
@@ -88,6 +93,29 @@ namespace TelegramBotApplication
                 Directory.CreateDirectory(finalPath);
 
             return Path.Combine(finalPath, "LastStatus.json");
+        }
+        private async Task InitializeTimers()
+        {
+            var chats = await chatService.GetAll();
+            foreach (var chat in chats)
+            {
+                foreach (var application in chat.Applications)
+                {
+                    chatsInfo.TryAdd(chat.ChatId, new ApplicationTimer()
+                    {
+                        ApplicationNumber = application.Number,
+                        Timer = new Timer(async _ =>
+                        {
+                            await Task.Run(() => Check(chat.ChatId, application.Number));
+                        }, null, TimeSpan.Zero, TimeSpan.FromHours(12))
+                    });
+                }
+            }
+        }
+        private class ApplicationTimer
+        {
+            public string ApplicationNumber {get; set; }
+            public Timer Timer {get; set; }
         }
     }
 }

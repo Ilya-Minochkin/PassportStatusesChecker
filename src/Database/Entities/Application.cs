@@ -7,15 +7,14 @@ using System.Threading.Tasks;
 
 namespace Database.Entities
 {
-    [Table("internal_status")]
-    public class InternalStatus
+    [Table("application")]
+    public class Application
     {
         [Column("id")]
         public int Id { get; set; }
-        public ReadinessResponse Response { get; set; }
-        [Column("name")]
-        public string Name { get; set; }
-        [Column("percent")]
-        public int Percent { get; set; }
+        [Column("chat_id")]
+        public Chat Chat { get; set; }
+        [Column("number")]
+        public string Number { get; set; }
     }
 }
